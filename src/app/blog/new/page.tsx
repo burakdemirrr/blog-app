@@ -1,17 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 export default function NewBlogPost() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: session, status } = useSession();
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/auth/login?message=Önce giriş yapmalısınız');
+    }
+  }, [status, router]);
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-indigo-600">Yükleniyor...</div>
+      </div>
+    );
+  }
+
+  if (status !== 'authenticated') {
+    return null;
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setIsSubmitting(true);
+    setIsLoading(true);
     setError('');
 
     const formData = new FormData(e.currentTarget);
@@ -24,13 +44,16 @@ export default function NewBlogPost() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title, content }),
+        body: JSON.stringify({
+          title,
+          content,
+          authorId: session.user.id
+        }),
       });
 
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Bir hata oluştu');
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Blog yazısı eklenirken bir hata oluştu');
       }
 
       router.push('/');
@@ -38,7 +61,7 @@ export default function NewBlogPost() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Bir hata oluştu');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   }
 
@@ -99,12 +122,12 @@ export default function NewBlogPost() {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isLoading}
               className={`w-full py-3 px-6 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium 
-                ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:from-indigo-700 hover:to-purple-700'} 
+                ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:from-indigo-700 hover:to-purple-700'} 
                 transition-all duration-200 shadow-md hover:shadow-lg`}
             >
-              {isSubmitting ? 'Yayınlanıyor...' : 'Yayınla'}
+              {isLoading ? 'Yayınlanıyor...' : 'Yayınla'}
             </button>
           </form>
         </div>

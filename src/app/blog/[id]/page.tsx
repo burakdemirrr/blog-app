@@ -1,13 +1,98 @@
-import React from 'react';
-import { posts } from '@/data/posts';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
+'use client';
 
-export default async function BlogPost({ params }: { params: { id: string } }) {
-  const post = posts.find(p => p.id === params.id);
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  author: {
+    name: string | null;
+    email: string | null;
+  };
+  createdAt: string;
+}
+
+export default function BlogPost({ params }: { params: { id: string } }) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [post, setPost] = useState<Post | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/auth/login?message=Lütfen önce giriş yapın');
+      return;
+    }
+
+    if (status === 'authenticated' && params.id) {
+      fetchPost();
+    }
+  }, [status, params.id, router]);
+
+  async function fetchPost() {
+    try {
+      setIsLoading(true);
+      setError('');
+      
+      const response = await fetch(`/api/posts/${params.id}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        if (response.status === 403) {
+          router.replace('/?message=Bu yazıya erişim yetkiniz yok');
+          return;
+        }
+        throw new Error(data || 'Blog yazısı yüklenemedi');
+      }
+
+      setPost(data);
+    } catch (error) {
+      console.error('Blog yazısı yüklenirken hata:', error);
+      setError(error instanceof Error ? error.message : 'Bir hata oluştu');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  if (status === 'loading' || isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-indigo-600">Yükleniyor...</div>
+      </div>
+    );
+  }
+
+  if (status !== 'authenticated') {
+    return null;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-center">
+            {error}
+          </div>
+          <div className="mt-4 text-center">
+            <Link 
+              href="/"
+              className="text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
+            >
+              Ana Sayfaya Dön
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!post) {
-    notFound();
+    return null;
   }
 
   return (
@@ -24,38 +109,21 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
             Ana Sayfaya Dön
           </Link>
         </nav>
-        
+
         <article className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-8 md:p-12 border border-indigo-50">
-          <header className="mb-8 pb-8 border-b border-indigo-100">
-            <h1 className="text-4xl md:text-5xl font-bold text-indigo-900 mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+          <header className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-indigo-900 mb-4">
               {post.title}
             </h1>
-            <div className="flex items-center text-indigo-600">
-              <span className="font-medium">{post.author}</span>
-              <span className="mx-2 text-indigo-300">•</span>
-              <time dateTime={post.date} className="text-indigo-500">{post.date}</time>
+            <div className="text-indigo-600/80">
+              {new Date(post.createdAt).toLocaleDateString('tr-TR')} • {post.author.name || post.author.email}
             </div>
           </header>
-          
-          <div className="prose prose-lg max-w-none prose-headings:text-indigo-900 prose-p:text-indigo-800/80 prose-a:text-indigo-600 hover:prose-a:text-indigo-700">
-            {post.content.split('\n').map((paragraph, index) => {
-              const trimmedParagraph = paragraph.trim();
-              if (!trimmedParagraph) return null;
-              
-              if (trimmedParagraph.startsWith('-')) {
-                return (
-                  <ul key={index} className="list-disc list-inside">
-                    <li className="text-indigo-800/80">{trimmedParagraph.slice(1).trim()}</li>
-                  </ul>
-                );
-              }
-              
-              return (
-                <p key={index} className="mb-4">
-                  {trimmedParagraph}
-                </p>
-              );
-            })}
+
+          <div className="prose prose-indigo max-w-none">
+            {post.content.split('\n').map((paragraph, index) => (
+              paragraph.trim() && <p key={index}>{paragraph}</p>
+            ))}
           </div>
         </article>
       </div>

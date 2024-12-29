@@ -1,52 +1,72 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/route';
+
+const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {
-    const { title, content } = await request.json();
-    
-    // Yeni blog yazısı objesi oluştur
-    const newPost = {
-      id: Date.now().toString(), // Basit bir ID oluşturma yöntemi
-      title,
-      content,
-      excerpt: content.slice(0, 150) + '...', // İlk 150 karakteri al
-      date: new Date().toISOString().split('T')[0], // YYYY-MM-DD formatında
-      author: 'Mehmet Bura'
-    };
+    const session = await getServerSession(authOptions);
 
-    // Mevcut posts dosyasını oku
-    const postsPath = path.join(process.cwd(), 'src', 'data', 'posts.ts');
-    const postsFile = await fs.readFile(postsPath, 'utf-8');
-    
-    // Mevcut posts array'ini çıkar
-    const postsMatch = postsFile.match(/export const posts: BlogPost\[\] = \[([\s\S]*?)\];/);
-    if (!postsMatch) {
-      throw new Error('Posts array not found');
+    if (!session?.user) {
+      return new NextResponse('Unauthorized', { status: 401 });
     }
-    
-    const currentPosts = postsMatch[1].trim();
-    
-    // Yeni post'u ekle
-    const newPostStr = JSON.stringify(newPost, null, 2)
-      .replace(/"([^"]+)":/g, '$1:') // JSON'dan JavaScript object formatına çevir
-      .replace(/^/gm, '  '); // Her satırın başına 2 boşluk ekle
 
-    const updatedPosts = currentPosts 
-      ? `${newPostStr},\n${currentPosts}` 
-      : newPostStr;
+    const { title, content } = await request.json();
 
-    // Dosyayı güncelle
-    const updatedContent = `import { BlogPost } from '@/types/blog';\n\nexport const posts: BlogPost[] = [\n${updatedPosts}\n];`;
-    await fs.writeFile(postsPath, updatedContent, 'utf-8');
+    // Basit validasyon
+    if (!title || !content) {
+      return new NextResponse('Başlık ve içerik gerekli', { status: 400 });
+    }
 
-    return NextResponse.json({ success: true, post: newPost });
+    // Blog yazısını oluştur
+    const post = await prisma.post.create({
+      data: {
+        title,
+        content,
+        excerpt: content.slice(0, 150) + '...',
+        authorId: session.user.id,
+      },
+    });
+
+    return NextResponse.json(post);
   } catch (error) {
-    console.error('Error adding post:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to add post' },
-      { status: 500 }
-    );
+    console.error('Post creation error:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    // Sadece kullanıcının kendi yazılarını getir
+    const posts = await prisma.post.findMany({
+      where: {
+        authorId: session.user.id,
+        published: true,
+      },
+      include: {
+        author: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json(posts);
+  } catch (error) {
+    console.error('Post fetch error:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
   }
 } 
