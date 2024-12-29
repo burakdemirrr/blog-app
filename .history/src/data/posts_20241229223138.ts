@@ -2,14 +2,6 @@ import { BlogPost } from '@/types/blog';
 
 export const posts: BlogPost[] = [
   {
-    id: "1735500702978",
-    title: "qweqw",
-    content: "eqwewqe",
-    excerpt: "eqwewqe...",
-    date: "2024-12-29",
-    author: "Mehmet Bura"
-  },
-{
     id: '1',
     title: 'Next.js ile Modern Web Geliştirme',
     excerpt: 'Next.js, React tabanlı web uygulamaları geliştirmek için mükemmel bir framework. Bu yazıda Next.js\'in temel özelliklerini inceliyoruz...',

@@ -3,7 +3,7 @@ import { posts } from '@/data/posts';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-export default async function BlogPost({ params }: { params: { id: string } }) {
+export default function BlogPost({ params }: { params: { id: string } }) {
   const post = posts.find(p => p.id === params.id);
 
   if (!post) {
@@ -15,7 +15,7 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <nav className="mb-8">
           <Link 
-            href="/"
+            href="/" 
             className="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
