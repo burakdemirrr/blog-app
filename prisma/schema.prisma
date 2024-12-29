@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -27,7 +27,8 @@ model Post {
   id        String   @id @default(cuid())
   title     String
   content   String
-  excerpt   String
+  excerpt   String?
+  imageUrl  String?
   published Boolean  @default(true)
   author    User     @relation(fields: [authorId], references: [id])
   authorId  String

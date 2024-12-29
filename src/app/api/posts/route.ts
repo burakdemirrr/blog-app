@@ -1,39 +1,53 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const { title, content } = await request.json();
+    const { title, content, imageUrl } = await request.json();
 
-    // Basit validasyon
     if (!title || !content) {
-      return new NextResponse('Başlık ve içerik gerekli', { status: 400 });
+      return NextResponse.json(
+        { error: 'Başlık ve içerik gerekli' },
+        { status: 400 }
+      );
     }
 
-    // Blog yazısını oluştur
     const post = await prisma.post.create({
       data: {
         title,
         content,
         excerpt: content.slice(0, 150) + '...',
         authorId: session.user.id,
+        ...(imageUrl ? { imageUrl } : {}),
+      },
+      include: {
+        author: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
       },
     });
 
     return NextResponse.json(post);
   } catch (error) {
-    console.error('Post creation error:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    console.error('Blog yazısı oluşturma hatası:', error);
+    return NextResponse.json(
+      { error: 'Blog yazısı oluşturulurken bir hata oluştu' },
+      { status: 500 }
+    );
   }
 }
 
@@ -42,10 +56,12 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    // Sadece kullanıcının kendi yazılarını getir
     const posts = await prisma.post.findMany({
       where: {
         authorId: session.user.id,
@@ -66,7 +82,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json(posts);
   } catch (error) {
-    console.error('Post fetch error:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    console.error('Blog yazıları getirme hatası:', error);
+    return NextResponse.json(
+      { error: 'Blog yazıları yüklenirken bir hata oluştu' },
+      { status: 500 }
+    );
   }
 } 

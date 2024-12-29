@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -10,6 +11,7 @@ interface Post {
   title: string;
   content: string;
   excerpt: string;
+  imageUrl: string | null;
   author: {
     name: string | null;
     email: string | null;
@@ -91,6 +93,17 @@ export default function Home() {
                 key={post.id} 
                 className="bg-gray-900/50 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-800 hover:border-gray-700"
               >
+                {post.imageUrl && (
+                  <div className="relative w-full h-48">
+                    <Image
+                      src={post.imageUrl}
+                      alt={post.title}
+                      width={800}
+                      height={400}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                )}
                 <div className="p-6">
                   <div className="text-sm text-indigo-400 mb-4 font-medium">
                     {new Date(post.createdAt).toLocaleDateString('tr-TR')} • {post.author.name || post.author.email}
