@@ -61,8 +61,8 @@ export default function BlogPost({ params }: { params: { id: string } }) {
 
   if (status === 'loading' || isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-indigo-600">Yükleniyor...</div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+        <div className="text-indigo-400">Yükleniyor...</div>
       </div>
     );
   }
@@ -73,15 +73,15 @@ export default function BlogPost({ params }: { params: { id: string } }) {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-center">
+          <div className="bg-red-900/50 border border-red-800 rounded-lg p-4 text-red-400 text-center">
             {error}
           </div>
           <div className="mt-4 text-center">
             <Link 
               href="/"
-              className="text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
+              className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
             >
               Ana Sayfaya Dön
             </Link>
@@ -96,12 +96,12 @@ export default function BlogPost({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <nav className="mb-8">
           <Link 
             href="/"
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
+            className="inline-flex items-center text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -110,17 +110,17 @@ export default function BlogPost({ params }: { params: { id: string } }) {
           </Link>
         </nav>
 
-        <article className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-8 md:p-12 border border-indigo-50">
+        <article className="bg-gray-900/50 backdrop-blur-sm rounded-2xl shadow-lg p-8 md:p-12 border border-gray-800">
           <header className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-indigo-900 mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-100 mb-4">
               {post.title}
             </h1>
-            <div className="text-indigo-600/80">
+            <div className="text-gray-400">
               {new Date(post.createdAt).toLocaleDateString('tr-TR')} • {post.author.name || post.author.email}
             </div>
           </header>
 
-          <div className="prose prose-indigo max-w-none">
+          <div className="prose prose-invert max-w-none">
             {post.content.split('\n').map((paragraph, index) => (
               paragraph.trim() && <p key={index}>{paragraph}</p>
             ))}
