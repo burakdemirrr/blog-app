@@ -2,6 +2,14 @@ import { BlogPost } from '@/types/blog';
 
 export const posts: BlogPost[] = [
   {
+    id: "1735500739501",
+    title: "qweqwe",
+    content: "qweqwewqeqw",
+    excerpt: "qweqwewqeqw...",
+    date: "2024-12-29",
+    author: "Mehmet Bura"
+  },
+{
     id: "1735500702978",
     title: "qweqw",
     content: "eqwewqe",

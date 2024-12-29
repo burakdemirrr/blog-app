@@ -43,9 +43,9 @@ export default function NewBlogPost() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <nav className="mb-8">
           <Link 
             href="/"
             className="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
@@ -55,7 +55,7 @@ export default function NewBlogPost() {
             </svg>
             Ana Sayfaya Dön
           </Link>
-        </div>
+        </nav>
 
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-8 md:p-12 border border-indigo-50">
           <h1 className="text-3xl font-bold text-indigo-900 mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
@@ -108,7 +108,7 @@ export default function NewBlogPost() {
             </button>
           </form>
         </div>
-      </main>
+      </div>
     </div>
   );
 } 

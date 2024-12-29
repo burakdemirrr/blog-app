@@ -11,8 +11,8 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <nav className="mb-8">
           <Link 
             href="/"
@@ -58,7 +58,7 @@ export default async function BlogPost({ params }: { params: { id: string } }) {
             })}
           </div>
         </article>
-      </main>
+      </div>
     </div>
   );
 } 
