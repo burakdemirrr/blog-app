@@ -4,11 +4,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'localhost',
+        hostname: '*',
       },
       {
         protocol: 'https',
-        hostname: 'vercel.app',
+        hostname: '*',
       }
     ],
     unoptimized: process.env.NODE_ENV === 'development',
